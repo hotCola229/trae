@@ -7,6 +7,25 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  retry:
+    initial-interval: 1000
+    max-interval: 5000
+    multiplier: 2.0
+    max-attempts: 3
+
+# 第三方服务配置
+third-party:
+  dict:
+    base-url: ${DICT_BASE_URL:http://172.20.4.32:18022/}
+    app-key: ${DICT_APP_KEY:28dc15bb-2e2c-45e4-b435-525853f69173}
+    app-secret: ${DICT_APP_SECRET:0e27fdf2820802cdea8e0eb22b695c93}
+    timeout:
+      connect: 5000
+      read: 10000
+    rate-limit:
+      capacity: 10
+      refill-tokens: 5
+      refill-duration: 1
 
 # MyBatis-Plus 配置
 mybatis-plus:
