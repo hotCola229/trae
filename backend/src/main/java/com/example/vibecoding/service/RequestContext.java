@@ -24,9 +24,6 @@ public class RequestContext {
     }
 
     public void reset() {
-        Map<String, Object> ctx = LOCAL.get();
-        if (ctx != null) {
-            ctx.clear();
-        }
+        LOCAL.remove();
     }
 }
