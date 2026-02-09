@@ -1,7 +1,7 @@
 package com.example.vibecoding;
 
-import com.example.vibecoding.model.entity.Project;
 import com.example.vibecoding.model.enums.ProjectStatusEnum;
+import com.example.vibecoding.model.request.ProjectCreateRequest;
 import com.example.vibecoding.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,18 +45,15 @@ class ProjectControllerTest {
     @Test
     void testCreateProjectSuccess() throws Exception {
         // 创建测试数据
-        Project project = new Project();
-        project.setName("测试项目1");
-        project.setOwner("测试用户1");
-        project.setStatus(ProjectStatusEnum.ACTIVE);
-        project.setCreatedAt(new Date());
-        project.setUpdatedAt(new Date());
-        project.setDeleted(0);
+        ProjectCreateRequest request = new ProjectCreateRequest();
+        request.setName("测试项目1");
+        request.setOwner("测试用户1");
+        request.setStatus(ProjectStatusEnum.ACTIVE);
 
         // 执行请求
         MvcResult result = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(project)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
@@ -71,18 +68,15 @@ class ProjectControllerTest {
     @Test
     void testCreateProjectParamValidationFailed() throws Exception {
         // 创建测试数据（name为空）
-        Project project = new Project();
-        project.setName("");
-        project.setOwner("测试用户1");
-        project.setStatus(ProjectStatusEnum.ACTIVE);
-        project.setCreatedAt(new Date());
-        project.setUpdatedAt(new Date());
-        project.setDeleted(0);
+        ProjectCreateRequest request = new ProjectCreateRequest();
+        request.setName("");
+        request.setOwner("测试用户1");
+        request.setStatus(ProjectStatusEnum.ACTIVE);
 
         // 执行请求
         MvcResult result = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(project)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(40001))
@@ -110,25 +104,33 @@ class ProjectControllerTest {
      */
     @Test
     void testDeleteProjectAndGetNotFound() throws Exception {
-        // 先创建一个项目
-        Project project = new Project();
-        project.setName("测试项目2");
-        project.setOwner("测试用户2");
-        project.setStatus(ProjectStatusEnum.ACTIVE);
-        project.setCreatedAt(new Date());
-        project.setUpdatedAt(new Date());
-        project.setDeleted(0);
-        Project createdProject = projectService.createProject(project);
+        // 先创建一个项目，获取返回的项目信息
+        ProjectCreateRequest request = new ProjectCreateRequest();
+        request.setName("测试项目2");
+        request.setOwner("测试用户2");
+        request.setStatus(ProjectStatusEnum.ACTIVE);
+        
+        // 通过API创建项目并获取ID
+        MvcResult createResult = mockMvc.perform(post("/api/projects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        // 解析返回的项目ID
+        String responseContent = createResult.getResponse().getContentAsString();
+        Long projectId = objectMapper.readTree(responseContent).path("data").path("id").asLong();
 
         // 删除项目
-        mockMvc.perform(delete("/api/projects/" + createdProject.getId())
+        mockMvc.perform(delete("/api/projects/" + projectId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
 
         // 再次查询该项目，应该返回40401
-        mockMvc.perform(get("/api/projects/" + createdProject.getId())
+        mockMvc.perform(get("/api/projects/" + projectId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())

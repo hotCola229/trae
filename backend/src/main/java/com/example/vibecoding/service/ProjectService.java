@@ -4,28 +4,31 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.vibecoding.model.entity.Project;
+import com.example.vibecoding.model.vo.ProjectVO;
+import com.example.vibecoding.model.request.ProjectCreateRequest;
+import com.example.vibecoding.model.request.ProjectUpdateRequest;
 
 public interface ProjectService extends IService<Project> {
 
     /**
      * 创建项目
      */
-    Project createProject(Project project);
+    ProjectVO createProject(ProjectCreateRequest request);
 
     /**
      * 查询单个项目
      */
-    Project getProjectById(Long id);
+    ProjectVO getProjectById(Long id);
 
     /**
      * 分页查询项目列表
      */
-    IPage<Project> getProjectList(int page, int size, String keyword);
+    IPage<ProjectVO> getProjectList(int page, int size, String keyword);
 
     /**
      * 更新项目
      */
-    Project updateProject(Project project);
+    ProjectVO updateProject(ProjectUpdateRequest request);
 
     /**
      * 删除项目（逻辑删除）
